@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
         integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
@@ -106,7 +107,35 @@
             </div>
         </div>
         <!-- AKHIR MODAL -->
+
+
+        <!-- MULAI MODAL KONFIRMASI DELETE-->
+
+        <div class="modal fade" tabindex="-1" role="dialog" id="konfirmasi-modal" data-backdrop="false">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">PERHATIAN</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><b>Jika menghapus Pegawai maka</b></p>
+                        <p>*data pegawai tersebut hilang selamanya, apakah anda yakin?</p>
+                    </div>
+                    <div class="modal-footer bg-whitesmoke br">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-danger" name="tombol-hapus" id="tombol-hapus">Hapus
+                            Data</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+
 
     <!-- LIBARARY JS -->
     <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.3.1.js"></script>
@@ -132,7 +161,7 @@
         integrity="sha256-siqh9650JHbYFKyZeTEAhq+3jvkFCG8Iz+MHdr9eKrw=" crossorigin="anonymous"></script>
 
 
-    <script>
+    <script type="text/javascript" language="javascript">
         //CSRF TOKEN PADA HEADER
         //Script ini wajib krn kita butuh csrf token setiap kali mengirim request post, patch, put dan delete ke server
         $(document).ready(function() {
@@ -224,6 +253,52 @@
                 }
             })
         }
+
+        //TOMBOL EDIT DATA PER PEGAWAI DAN TAMPIKAN DATA BERDASARKAN ID PEGAWAI KE MODAL
+        //ketika class edit-post yang ada pada tag body di klik maka
+        $('body').on('click', '.edit-post', function() {
+            var data_id = $(this).data('id');
+            $.get('pegawai/' + data_id + '/edit', function(data) {
+                $('#modal-judul').html("Edit Post");
+                $('#tombol-simpan').val("edit-post");
+                $('#tambah-edit-modal').modal('show');
+                //set value masing-masing id berdasarkan data yg diperoleh dari ajax get request diatas               
+                $('#id').val(data.id);
+                $('#nama_pegawai').val(data.nama_pegawai);
+                $('#jenis_kelamin').val(data.jenis_kelamin);
+                $('#email').val(data.email);
+                $('#alamat').val(data.alamat);
+            })
+        });
+
+        //jika klik class delete (yang ada pada tombol delete) maka tampilkan modal konfirmasi hapus maka
+        $(document).on('click', '.delete', function() {
+            dataId = $(this).attr('id');
+            $('#konfirmasi-modal').modal('show');
+        });
+
+        //jika tombol hapus pada modal konfirmasi di klik maka
+        $('#tombol-hapus').click(function() {
+            $.ajax({
+                url: "pegawai/" + dataId, //eksekusi ajax ke url ini
+                type: 'delete',
+                beforeSend: function() {
+                    $('#tombol-hapus').text('Hapus Data'); //set text untuk tombol hapus
+                },
+                success: function(data) { //jika sukses
+                    setTimeout(function() {
+                        $('#konfirmasi-modal').modal('hide'); //sembunyikan konfirmasi modal
+                        var oTable = $('#table_pegawai').dataTable();
+                        oTable.fnDraw(false); //reset datatable
+                    });
+                    iziToast.warning({ //tampilkan izitoast warning
+                        title: 'Data Berhasil Dihapus',
+                        message: '{{ Session('delete ') }}',
+                        position: 'bottomRight'
+                    });
+                }
+            })
+        });
     </script>
 </body>
 

@@ -86,7 +86,10 @@ class PegawaiController extends Controller
      */
     public function edit($id)
     {
-        //
+        $where = array('id' => $id);
+        $post  = Pegawai::where($where)->first();
+
+        return response()->json($post);
     }
 
     /**
@@ -109,6 +112,8 @@ class PegawaiController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Pegawai::where('id', $id)->delete();
+
+        return response()->json($post);
     }
 }
